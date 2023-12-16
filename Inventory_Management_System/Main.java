@@ -1,10 +1,11 @@
-package OOPS_Practice.Inventory_Management_System;
+package Java_Basics.Inventory_Management_System;
 
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.*;
+import java.util.HashMap;
 
 public class Main {
     public static void main(String[] args) {
@@ -196,13 +197,18 @@ public class Main {
     }
 
     // Example: Method to save data to file
+    // Method to save data to file
     private static void saveDataToFile(InventoryManagementSystem ims, Scanner scanner) {
         System.out.println("Enter the file name to save data: ");
         String fileName = scanner.next();
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
-            oos.writeObject(ims.getCustomers());
-            oos.writeObject(ims.getInventory().getProductsInStock());
+        try (PrintWriter writer = new PrintWriter(new FileWriter(fileName))) {
+            // Convert data to HashMap and write to the file
+            for (Customer customer : ims.getCustomers()) {
+                HashMap<String, String> customerData = convertCustomerToHashMap(customer);
+                writer.println(customerData);
+            }
+
             System.out.println("Data saved successfully to " + fileName);
         } catch (IOException e) {
             System.out.println("Error saving data: " + e.getMessage());
@@ -214,17 +220,50 @@ public class Main {
         System.out.println("Enter the file name to load data from: ");
         String fileName = scanner.next();
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
-            List<Customer> loadedCustomers = (List<Customer>) ois.readObject();
-            List<Product> loadedProducts = (List<Product>) ois.readObject();
-
-            ims.getCustomers().addAll(loadedCustomers);
-            ims.getInventory().setProductsInStock(loadedProducts);
+        try (Scanner fileScanner = new Scanner(new File(fileName))) {
+            // Read and process the file content as needed
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                // Parse the line and update your data structures
+                HashMap<String, String> customerData = parseCustomerDataFromLine(line);
+                // Create a new Customer object from the HashMap
+                Customer customer = convertHashMapToCustomer(customerData);
+                ims.registerCustomer(customer);
+            }
 
             System.out.println("Data loaded successfully from " + fileName);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             System.out.println("Error loading data: " + e.getMessage());
         }
+    }
+
+    // Convert Customer object to HashMap
+    private static HashMap<String, String> convertCustomerToHashMap(Customer customer) {
+        HashMap<String, String> customerData = new HashMap<>();
+        customerData.put("customerID", customer.getCustomerID());
+        customerData.put("customerName", customer.getCustomerName());
+        customerData.put("customerEmail", customer.getEmail());
+        // Add more fields as needed
+        return customerData;
+    }
+
+    // Convert HashMap to Customer object
+    private static Customer convertHashMapToCustomer(HashMap<String, String> customerData) {
+        String customerID = customerData.get("customerID");
+        String customerName = customerData.get("customerName");
+        String customerEmail = customerData.get("customerEmail");
+        // Create a new Customer object using the extracted data
+        return new Customer(customerID, customerName, customerEmail, new ArrayList<>());
+    }
+
+    // Example: Parse customer data from a line
+    private static HashMap<String, String> parseCustomerDataFromLine(String line) {
+        // Implement the logic to parse the line and extract key-value pairs
+        // Example: Split the line into key-value pairs and create a HashMap
+        // ...
+
+        // Placeholder return, replace with actual implementation
+        return new HashMap<>();
     }
 
     // Example: Method to display menu options
